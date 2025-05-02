@@ -1,0 +1,112 @@
+:root {
+  --vo-primary: #88B44E;
+  --vo-secondary: #FB9F38;
+  --vo-light: #F5F8F2;
+  --vo-dark: #252C30;
+}
+
+.vo-background {
+  padding: 2rem;
+  background: linear-gradient(rgba(136, 180, 78, .1), rgba(136, 180, 78, .1)), url(../../img/product-bg.png) left bottom no-repeat;
+  background-size: auto;
+}
+
+.vo-container {
+  max-width: 1140px;
+  margin: 0 auto;
+  
+}
+
+.vo-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 30px;
+  margin-top: 40px;
+}
+
+@media (max-width: 768px) {
+  .vo-card-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.vo-card {
+  background: #f8fff8;
+  border-radius: 1.25rem;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  padding: 24px 28px;
+  font-size: 0.92rem; /* Smaller font */
+  border: 1px solid #cee6be;
+}
+
+.vo-card:hover {
+  transform: scale(1.01);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+}
+
+.vo-section-title {
+  font-size: 1.6rem;
+  color: var(--vo-primary);
+  margin-bottom: 20px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #d5e9d5;
+}
+
+.vo-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+.vo-form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.vo-form-group.vo-full {
+  grid-column: 1 / -1;
+}
+
+.vo-label {
+  font-weight: 600;
+  margin-bottom: 7px;
+  color: #444941;
+  font-size: 0.95rem;
+}
+
+.vo-input,
+.vo-textarea {
+  background: var(--vo-light);
+  border: 1px solid #cee6be;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  color: #333;
+  resize: none;
+  margin-bottom: 7px;
+}
+.vo-container .vo-input:focus,
+.vo-container .vo-input:focus-visible,
+.vo-container textarea.vo-input:focus,
+.vo-container textarea.vo-input:focus-visible {
+  outline: none;
+  border-color: var(--vo-primary);
+  box-shadow: 0 0 1px var(--vo-primary);
+}
+
+.vo-input[readonly],
+.vo-textarea[readonly] {
+  background-color: #f0f5f0;
+  cursor: not-allowed;
+  color: #666;
+}
+
+.vo-product-card {
+  background: #f8fff8;
+  border: 1px dashed #bcd69f;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  font-size: 0.92rem;
+}
