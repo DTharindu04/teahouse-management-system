@@ -1,8 +1,5 @@
-import './App.css';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
-
-
 
 import Spinner from './components/Spinner';
 import Navbar from './components/Navbar';
@@ -22,7 +19,7 @@ import NewOrder from './pages/OrderManagement/NewOrder';
 import UpdateOrder from './pages/OrderManagement/UpdateOrder';
 import ViewOrder from './pages/OrderManagement/ViewOrder';
 
-
+import AdminApp from './admin/AdminApp';
 
 const headerTitles = {
   '/about': 'About Us',
@@ -33,28 +30,24 @@ const headerTitles = {
   '/contact': 'Contact Us',
   '/orders': 'Order List',
   '/neworder': 'Order Us',
-  
 };
 
-
-const AppLayout = ({ loading, setLoading }) => {
+const PublicLayout = ({ loading, setLoading }) => {
   const location = useLocation();
   let title = headerTitles[location.pathname];
 
-// Handle dynamic route for ViewOrder (me tika wenas kare)
-if (!title && location.pathname.startsWith('/orders/vieworder/')) {
-  title = 'Order Overview';
-}
+  // Handle dynamic route for ViewOrder
+  if (!title && location.pathname.startsWith('/orders/vieworder/')) {
+    title = 'Order Overview';
+  }
 
-// Handle dynamic route for UpdateOrder
-if (!title && location.pathname.startsWith('/orders/') && location.pathname.split('/').length === 3 && !location.pathname.includes('vieworder')) {
-  title = 'Update Order';
-}
+  if (!title && location.pathname.startsWith('/orders/') && location.pathname.split('/').length === 3 && !location.pathname.includes('vieworder')) {
+    title = 'Update Order';
+  }
 
   useEffect(() => {
-    // Trigger loading spinner on route change
     setLoading(true);
-    const timeout = setTimeout(() => setLoading(false), 300); // Simulate load time
+    const timeout = setTimeout(() => setLoading(false), 300);
     return () => clearTimeout(timeout);
   }, [location.pathname, setLoading]);
 
@@ -62,14 +55,12 @@ if (!title && location.pathname.startsWith('/orders/') && location.pathname.spli
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
-  
-
   return (
     <>
       <Spinner loading={loading} />
       <Navbar />
       {title && <Header key={location.pathname} title={title} />}
-      
+
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
@@ -82,8 +73,6 @@ if (!title && location.pathname.startsWith('/orders/') && location.pathname.spli
         <Route path="/neworder" element={<NewOrder />} />
         <Route path="/orders/:orderId" element={<UpdateOrder />} />
         <Route path="/orders/vieworder/:id" element={<ViewOrder />} />
-
-
       </Routes>
 
       <Footer />
@@ -96,24 +85,21 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Initial load spinner
     const timer = setTimeout(() => {
       setLoading(false);
-      
-      // Start animations after the spinner ends
-      
-        // WOW.js animation init
-        new window.WOW().init();
-       // Small delay to ensure everything is set
-    }, 300); // Spinner duration
-
+      new window.WOW().init();
+    }, 300);
     return () => clearTimeout(timer);
   }, []);
 
   return (
     <Router>
-      <AppLayout loading={loading} setLoading={setLoading} />
-      
+      <Routes>
+        
+        <Route path="/admin/*" element={<AdminApp />} />
+        
+        <Route path="*" element={<PublicLayout loading={loading} setLoading={setLoading} />} />
+      </Routes>
     </Router>
   );
 }
