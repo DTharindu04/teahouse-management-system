@@ -1,4 +1,4 @@
-export const DASHBOARD_PATH = '/dashboard/default';
+export const DASHBOARD_PATH = '/admin/dashboard';
 
 const config = {
   fontFamily: `'Roboto', sans-serif`,
