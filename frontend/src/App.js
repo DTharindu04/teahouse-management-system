@@ -21,6 +21,12 @@ import ViewOrder from './pages/OrderManagement/ViewOrder';
 
 import AdminApp from './admin/AdminApp';
 
+
+import AddService from './pages/Inventory Management/addservice';
+import Servicedetails from './pages/Inventory Management/servicedetails';
+import UpdateService from './pages/Inventory Management/update_service';
+
+
 const headerTitles = {
   '/about': 'About Us',
   '/products': 'Products',
@@ -30,6 +36,12 @@ const headerTitles = {
   '/contact': 'Contact Us',
   '/orders': 'Order List',
   '/neworder': 'Order Us',
+
+
+  '/addservice': 'Add Inventory',
+  '/inventorydetails': 'Inventory Details',
+  '/update_service': 'Update Inventory',
+
 };
 
 const PublicLayout = ({ loading, setLoading }) => {
@@ -73,6 +85,12 @@ const PublicLayout = ({ loading, setLoading }) => {
         <Route path="/neworder" element={<NewOrder />} />
         <Route path="/orders/:orderId" element={<UpdateOrder />} />
         <Route path="/orders/vieworder/:id" element={<ViewOrder />} />
+
+
+        <Route path='/addservice' element={<AddService/>}></Route>
+        <Route path='/inventorydetails' element={<Servicedetails/>}></Route>
+        <Route path='/update_service/:id' element={<UpdateService/>}></Route>
+
       </Routes>
 
       <Footer />
