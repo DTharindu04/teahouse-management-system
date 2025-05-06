@@ -1,0 +1,131 @@
+/* Container */
+.showoservices {
+  width: 80%;
+  margin: 5% auto 0;
+  font-size: 0.85rem; /* Small font size applied globally */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Search Bar */
+.searchbtn {
+  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.in {
+  padding: 6px;
+  width: 200px;
+  font-size: 0.85rem;
+}
+
+#search-btn {
+  padding: 6px 14px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  border-radius: 4px;
+}
+
+#search-btn:hover {
+  background-color: #0056b3;
+}
+
+/* Table */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 6px;
+  text-align: left;
+}
+
+th {
+  background-color: #f2f2f2;
+}
+
+/* Table Actions */
+.dback {
+  background-color: #f9f9f9;
+  padding: 6px;
+}
+
+.dback a,
+.dback button {
+  margin-right: 8px;
+  padding: 6px 12px;
+  text-decoration: none;
+  font-size: 0.8rem;
+  border-radius: 4px;
+  border: 1px solid #007bff;
+  color: #007bff;
+  background-color: transparent;
+  cursor: pointer;
+}
+
+.dback button {
+  background-color: red;
+  color: #fff;
+  border: none;
+}
+
+.dback a:hover,
+.dback button:hover {
+  background-color: #007bff;
+  color: #fff;
+}
+
+/* General Button Style */
+button {
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+/* PDF Layout */
+.pdf-container {
+  position: relative;
+  padding-top: 120px; /* Adjust for logo space */
+}
+
+.pdf-logo {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 120px;
+  height: auto;
+  display: none;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .pdf-logo {
+    display: block;
+  }
+
+  .pdf-container {
+    padding-top: 140px;
+  }
+
+  .pdf-table {
+    margin-top: 80px;
+  }
+}
