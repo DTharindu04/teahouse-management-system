@@ -10,16 +10,17 @@ const getAllInventory = async (req, res) => {
   }
 };
 
-// Create a new inventory item
 const createInventory = async (req, res) => {
-    try {
+  try {
       const data = new CateringModel(req.body);
-      await data.save();
+      await data.save(); // Save the new inventory item
       res.send({ success: true, message: "Data created successfully" });
-    } catch (err) {
+  } catch (err) {
+      console.error(err);  // Log any errors for debugging
       res.status(500).json({ success: false, message: "Creation failed" });
-    }
-  };
+  }
+};
+
   
 
 

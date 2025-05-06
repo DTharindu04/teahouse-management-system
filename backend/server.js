@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import TeaOrderRouter from './routes/teaOrder.routes.js';
+import inventoryRoutes from "./routes/inventory.routes.js";
 
 // Connect to the database
 
@@ -26,6 +27,7 @@ app.use(cors());
 app.use(cookieParser());
 
 app.use("/teaorder", TeaOrderRouter);
+app.use("/inventory", inventoryRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
