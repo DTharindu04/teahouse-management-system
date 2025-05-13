@@ -1,4 +1,3 @@
-// Required dependencies: axios, @mui/material, @tabler/icons-react, React
 import React, { useEffect, useState } from 'react';
 import {
   Box,
@@ -18,7 +17,6 @@ import {
   Chip,
   CircularProgress,
   Grid
-
 } from '@mui/material';
 import {
   IconSearch,
@@ -41,10 +39,16 @@ export default function ModernOrderTable() {
   const [expandedOrderId, setExpandedOrderId] = useState(null);
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const res = await axios.get('http://localhost:5000/teaorder');
-        const transformed = res.data.teaOrders.map((order) => {
+    fetchOrders();
+  }, []);
+
+  const fetchOrders = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get('http://localhost:5000/teaorder');
+      const transformed = res.data.teaOrders
+        .filter(order => !order.adminDeleted) // <- hide orders deleted by admin
+        .map((order) => {
           const product = order.products[0] || {};
           const totalAmount = order.products.reduce(
             (sum, p) => sum + p.unitPrice * p.quantity,
@@ -52,21 +56,13 @@ export default function ModernOrderTable() {
           );
           return {
             id: order._id,
-            orderDate: new Date(order.createdAt).toLocaleDateString('en-US', {
-              month: '2-digit',
-              day: '2-digit',
-              year: 'numeric'
-            }),
+            orderDate: new Date(order.createdAt).toLocaleDateString('en-US'),
             companyName: order.customerInfo?.companyName || '',
             email: order.customerInfo?.email || '',
             phone: order.customerInfo?.phone || '',
             teaType: product?.type || '',
             deliveryDate: order.deliveryInfo?.preferredDate
-              ? new Date(order.deliveryInfo.preferredDate).toLocaleDateString('en-US', {
-                month: '2-digit',
-                day: '2-digit',
-                year: 'numeric'
-              })
+              ? new Date(order.deliveryInfo.preferredDate).toLocaleDateString('en-US')
               : 'N/A',
             amount: totalAmount.toFixed(2),
             paymentMethod: order.paymentInfo?.paymentMethod || 'N/A',
@@ -74,15 +70,50 @@ export default function ModernOrderTable() {
             details: order
           };
         });
-        setOrders(transformed);
-      } catch (error) {
-        console.error('Error fetching tea orders:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchOrders();
-  }, []);
+      setOrders(transformed);
+    } catch (error) {
+      console.error('Error fetching tea orders:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStatusUpdate = async (orderId, newStatus) => {
+    try {
+      await axios.put(`http://localhost:5000/teaorder/${orderId}/status`, {
+        status: newStatus
+      });
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order.id === orderId ? { ...order, status: newStatus } : order
+        )
+      );
+    } catch (error) {
+      console.error('Failed to update status:', error);
+    }
+  };
+
+  const handleDelete = async (orderId, status) => {
+    if (status === 'Pending') {
+      alert('Admins cannot delete orders with Pending status.');
+      return;
+    }
+
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete this ${status} order? This action will hide the order from the admin dashboard.`
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      await axios.delete(`http://localhost:5000/teaorder/${orderId}?role=admin`);
+
+      setOrders((prevOrders) => prevOrders.filter((order) => order.id !== orderId));
+    } catch (error) {
+      console.error('Failed to delete order:', error);
+      alert('An error occurred while trying to delete the order.');
+    }
+  };
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value.toLowerCase());
@@ -114,7 +145,9 @@ export default function ModernOrderTable() {
   };
 
   const handleNextPage = () => {
-    setPage((prev) => Math.min(prev + 1, Math.ceil(filteredOrders.length / rowsPerPage) - 1));
+    setPage((prev) =>
+      Math.min(prev + 1, Math.ceil(filteredOrders.length / rowsPerPage) - 1)
+    );
   };
 
   const handlePrevPage = () => {
@@ -147,7 +180,6 @@ export default function ModernOrderTable() {
         </Box>
       ) : (
         <>
-
           <TableContainer component={Paper} sx={{ borderRadius: 0, boxShadow: 'none' }}>
             <Table sx={{ fontSize: '0.74rem' }}>
               <TableHead>
@@ -178,35 +210,87 @@ export default function ModernOrderTable() {
               </TableHead>
 
               <TableBody>
-
                 <Box component="tbody" display="contents">
                   {paginatedOrders.map((order) => (
                     <React.Fragment key={order.id}>
                       <TableRow hover>
-                        <TableCell sx={{ fontSize: '0.85rem' }}>{order.id.slice(-6).toUpperCase()}</TableCell>
-                        <TableCell sx={{ fontSize: '0.85rem' }}>{order.orderDate}</TableCell>
-                        <TableCell sx={{ fontSize: '0.85rem' }}>{order.companyName}</TableCell>
-                        <TableCell sx={{ fontSize: '0.85rem' }}>{order.phone}</TableCell>
-                        <TableCell sx={{ fontSize: '0.85rem' }}>{order.teaType}</TableCell>
-                        <TableCell sx={{ fontSize: '0.85rem' }}>{order.deliveryDate}</TableCell>
-                        <TableCell align="right" sx={{ fontSize: '0.85rem' }}>{order.amount}</TableCell>
                         <TableCell sx={{ fontSize: '0.85rem' }}>
-                          <Chip label={order.status} color={getStatusColor(order.status)} size="small" />
+                          {order.id.slice(-6).toUpperCase()}
+                        </TableCell>
+                        <TableCell sx={{ fontSize: '0.85rem' }}>
+                          {order.orderDate}
+                        </TableCell>
+                        <TableCell sx={{ fontSize: '0.85rem' }}>
+                          {order.companyName}
+                        </TableCell>
+                        <TableCell sx={{ fontSize: '0.85rem' }}>
+                          {order.phone}
+                        </TableCell>
+                        <TableCell sx={{ fontSize: '0.85rem' }}>
+                          {order.teaType}
+                        </TableCell>
+                        <TableCell sx={{ fontSize: '0.85rem' }}>
+                          {order.deliveryDate}
+                        </TableCell>
+                        <TableCell align="right" sx={{ fontSize: '0.85rem' }}>
+                          {order.amount}
+                        </TableCell>
+                        <TableCell sx={{ fontSize: '0.85rem' }}>
+                          <Chip
+                            label={order.status}
+                            color={getStatusColor(order.status)}
+                            size="small"
+                          />
                         </TableCell>
                         <TableCell>
-                          <IconButton onClick={() => setExpandedOrderId(order.id === expandedOrderId ? null : order.id)}>
-                            {order.id === expandedOrderId ? <IconChevronUp size={18} /> : <IconChevronDown size={18} />}
+                          <IconButton
+                            onClick={() =>
+                              setExpandedOrderId(
+                                order.id === expandedOrderId ? null : order.id
+                              )
+                            }
+                          >
+                            {order.id === expandedOrderId ? (
+                              <IconChevronUp size={18} />
+                            ) : (
+                              <IconChevronDown size={18} />
+                            )}
                           </IconButton>
-                          <IconButton color="success"><IconCheck size={16} /></IconButton>
-                          <IconButton color="error"><IconX size={16} /></IconButton>
-                          <IconButton color="default"><IconTrash size={16} /></IconButton>
+                          <IconButton
+                            color="success"
+                            onClick={() =>
+                              handleStatusUpdate(order.id, 'Accepted')
+                            }
+                            disabled={order.status !== 'Pending'}
+                          >
+                            <IconCheck size={16} />
+                          </IconButton>
+                          <IconButton
+                            color="error"
+                            onClick={() =>
+                              handleStatusUpdate(order.id, 'Rejected')
+                            }
+                            disabled={order.status !== 'Pending'}
+                          >
+                            <IconX size={16} />
+                          </IconButton>
+                          <IconButton
+                            color="default"
+                            onClick={() => handleDelete(order.id, order.status)}
+                            disabled={order.status === 'Pending'}
+                          >
+                            <IconTrash size={16} />
+                          </IconButton>
                         </TableCell>
                       </TableRow>
+
                       <TableRow>
-                        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={10}>
+                        <TableCell colSpan={10} style={{ paddingBottom: 0, paddingTop: 0 }}>
                           <Collapse in={order.id === expandedOrderId} timeout="auto" unmountOnExit>
                             <Box margin={2} sx={{ fontSize: '0.80rem' }}>
-                              <Typography variant="subtitle2" gutterBottom sx={{ color: '#4527a0' }}>Customer Information</Typography>
+                              <Typography variant="subtitle2" sx={{ color: '#4527a0' }}>
+                                Customer Information
+                              </Typography>
                               <Grid container spacing={2}>
                                 <Grid item xs={12} sm={6}>Company: {order.details.customerInfo?.companyName}</Grid>
                                 <Grid item xs={12} sm={6}>Website: {order.details.customerInfo?.companyWebsite}</Grid>
@@ -214,14 +298,18 @@ export default function ModernOrderTable() {
                                 <Grid item xs={12} sm={6}>Phone: {order.details.customerInfo?.phone}</Grid>
                               </Grid>
 
-                              <Typography variant="subtitle2" sx={{ mt: 2, color: '#4527a0' }}>Tea Order Details</Typography>
+                              <Typography variant="subtitle2" sx={{ mt: 2, color: '#4527a0' }}>
+                                Tea Order Details
+                              </Typography>
                               {order.details.products.map((p, i) => (
                                 <Box key={i} pl={2}>
-                                  {p.type} / {p.grade} / {p.packaging} / {p.size} - {p.quantity} x ${p.unitPrice} = ${(p.quantity * p.unitPrice).toFixed(2)}
+                                  {p.type} / {p.grade} / {p.packaging} / {p.size} — {p.quantity} x ${p.unitPrice} = ${(p.quantity * p.unitPrice).toFixed(2)}
                                 </Box>
                               ))}
 
-                              <Typography variant="subtitle2" sx={{ mt: 2, color: '#4527a0' }}>Shipping & Delivery</Typography>
+                              <Typography variant="subtitle2" sx={{ mt: 2, color: '#4527a0' }}>
+                                Shipping & Delivery
+                              </Typography>
                               <Box pl={2}>
                                 Method: {order.details.deliveryInfo?.deliveryMethod}<br />
                                 Address: {order.details.deliveryInfo?.deliveryAddress}<br />
@@ -229,7 +317,9 @@ export default function ModernOrderTable() {
                                 Instructions: {order.details.deliveryInfo?.instructions}
                               </Box>
 
-                              <Typography variant="subtitle2" sx={{ mt: 2, color: '#4527a0' }}>Payment Info</Typography>
+                              <Typography variant="subtitle2" sx={{ mt: 2, color: '#4527a0' }}>
+                                Payment Info
+                              </Typography>
                               <Box pl={2}>
                                 Method: {order.details.paymentInfo?.paymentMethod}<br />
                                 Currency: {order.details.paymentInfo?.currency}<br />
@@ -244,7 +334,6 @@ export default function ModernOrderTable() {
                     </React.Fragment>
                   ))}
                 </Box>
-
               </TableBody>
             </Table>
           </TableContainer>

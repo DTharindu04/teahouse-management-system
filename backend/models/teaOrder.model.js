@@ -34,6 +34,13 @@ const TeaOrderSchema = new mongoose.Schema(
       requestInvoice: { type: Boolean },
       billingAddress: { type: String },
     },
+    status: {
+      type: String,
+      enum: ["Pending", "Accepted", "Rejected"],
+      default: "Pending",
+    },
+    hiddenFromCustomer: { type: Boolean, default: false },
+    hiddenFromAdmin: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

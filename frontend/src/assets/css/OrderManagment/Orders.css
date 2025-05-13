@@ -62,12 +62,12 @@
   color: #856404;
 }
 
-.status.delivered {
+.status.accepted {
   background-color: #d4edda;
   color: #155724;
 }
 
-.status.cancelled {
+.status.rejected {
   background-color: #f8d7da;
   color: #721c24;
 }

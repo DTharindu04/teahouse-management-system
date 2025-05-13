@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import "../../assets/css/OrderManagment/Orders.css";
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { GenerateOrderPDF } from './GenerateOrderPDF.js';
 import ConfirmModal from '../../components/popup/DeleteConfirmModal.js';
 
 const OrderTable = () => {
@@ -25,14 +26,14 @@ const OrderTable = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/teaorder');
+        const res = await axios.get('http://localhost:5000/teaorder?role=customer');
         const fetchedOrders = res.data.teaOrders;
 
         const transformedOrders = fetchedOrders.map((order) => {
           const product = order.products[0];
           return {
-            _id: order._id, // Store original MongoDB ID
-            id: order._id.slice(-6).toUpperCase(), // UI display
+            _id: order._id,
+            id: order._id.slice(-6).toUpperCase(),
             orderDate: new Date(order.createdAt).toISOString().split('T')[0],
             teaType: product?.type || "-",
             teaGrade: product?.grade || "-",
@@ -43,7 +44,7 @@ const OrderTable = () => {
               maximumFractionDigits: 2,
             })}`,
             preferredDeliveryDate: order.deliveryInfo?.preferredDate?.split('T')[0] || "-",
-            status: "Pending", // Placeholder
+            status: order.status || "Pending", // If you store actual status
           };
         });
 
@@ -57,6 +58,7 @@ const OrderTable = () => {
     fetchOrders();
   }, []);
 
+
   const handleDeleteClick = (_id) => {
     setOrderToDelete(_id); // set the actual MongoDB ID
     setShowConfirm(true);
@@ -64,7 +66,8 @@ const OrderTable = () => {
 
   const confirmDelete = async () => {
     try {
-      await axios.delete(`http://localhost:5000/teaorder/${orderToDelete}`);
+
+      await axios.delete(`http://localhost:5000/teaorder/${orderToDelete}?role=customer`);
       const updatedOrders = orders.filter(order => order._id !== orderToDelete);
       setOrders(updatedOrders);
       setFilteredData(updatedOrders);
@@ -119,6 +122,7 @@ const OrderTable = () => {
   };
 
 
+
   return (
     <div className="table-container py-5">
       <div className="section-title text-center mx-auto wow fadeInUp" data-wow-delay="0.1s" style={{ maxWidth: "500px" }}>
@@ -140,8 +144,8 @@ const OrderTable = () => {
         >
           <option value="All">All Status</option>
           <option value="Pending">Pending</option>
-          <option value="Delivered">Delivered</option>
-          <option value="Cancelled">Cancelled</option>
+          <option value="Accepted">Accepted</option>
+          <option value="Rejected">Rejected</option>
         </select>
         <Link to="/neworder">
           <button>+ New Order</button>
@@ -197,13 +201,18 @@ const OrderTable = () => {
                     <td>{order.preferredDeliveryDate}</td>
                     <td><span className={`status ${order.status.toLowerCase()}`}>{order.status}</span></td>
                     <td className="actions">
-                    <Link to={`/orders/vieworder/${order._id}`}><button className="action-btn view" title="View">
+                      <Link to={`/orders/vieworder/${order._id}`}><button className="action-btn view" title="View">
                         <i className="bx bx-show"></i>
                       </button></Link>
-                    
 
-                      <button className="action-btn download" title="Download"><i className="bx bx-download"></i></button>
-                      <Link to={`/orders/${order._id}`}> <button className="action-btn edit" title="Edit"><i className="bx bx-edit"></i></button></Link>
+
+                      <button className="action-btn download" title="Download" onClick={() => GenerateOrderPDF(order)}><i className="bx bx-download"></i></button>
+                      <Link to={`/orders/${order._id}`}> <button className="action-btn edit" title="Edit" disabled={order.status === "Accepted" || order.status === "Rejected"}
+                        style={
+                          order.status === "Accepted" || order.status === "Rejected"
+                            ? { cursor: "not-allowed", opacity: 0.5 }
+                            : {}
+                        }><i className="bx bx-edit"></i></button></Link>
                       <button className="action-btn delete" title="Delete" onClick={() => handleDeleteClick(order._id)}><i className="bx bx-trash"></i></button>
                     </td>
                   </motion.tr>
