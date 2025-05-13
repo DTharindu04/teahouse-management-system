@@ -19,6 +19,8 @@ import NewOrder from './pages/OrderManagement/NewOrder';
 import UpdateOrder from './pages/OrderManagement/UpdateOrder';
 import ViewOrder from './pages/OrderManagement/ViewOrder';
 
+import SupplierTable from './pages/SupplierManagement/SupplierTable';
+
 import AdminApp from './admin/AdminApp';
 
 const headerTitles = {
@@ -30,6 +32,7 @@ const headerTitles = {
   '/contact': 'Contact Us',
   '/orders': 'Order List',
   '/neworder': 'Order Us',
+  '/suppliers': 'Suppliers',
 };
 
 const PublicLayout = ({ loading, setLoading }) => {
@@ -73,6 +76,9 @@ const PublicLayout = ({ loading, setLoading }) => {
         <Route path="/neworder" element={<NewOrder />} />
         <Route path="/orders/:orderId" element={<UpdateOrder />} />
         <Route path="/orders/vieworder/:id" element={<ViewOrder />} />
+
+        <Route path="/suppliers" element={<SupplierTable />} />
+
       </Routes>
 
       <Footer />

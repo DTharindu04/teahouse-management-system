@@ -1,73 +1,133 @@
 import TeaOrder from "../models/teaOrder.model.js";
 
-// Get All Tea Orders
-const getAllTeaOrders = async (req, res, next) => {
-    try {
-        const teaOrders = await TeaOrder.find();
-        if (!teaOrders || teaOrders.length === 0) {
-            return res.status(404).json({ message: "Tea orders not found" });
-        }
-        return res.status(200).json({ teaOrders });
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ message: "Internal server error" });
-    }
+//  Create a New Tea Order
+const createTeaOrder = async (req, res) => {
+  try {
+    req.body.date = new Date();
+    const newTeaOrder = new TeaOrder(req.body);
+    const savedOrder = await newTeaOrder.save();
+    return res.status(201).json({ teaOrder: savedOrder });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };
 
-// Create A New Tea Order
-const createTeaOrder = async (req, res, next) => {
-    try {
-        req.body.date = new Date();
-        const newTeaOrder = new TeaOrder(req.body);
-        const savedTeaOrder = await newTeaOrder.save();
-        return res.status(201).json({ teaOrder: savedTeaOrder });
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ message: "Internal server error" });
+//  Get All Tea Orders (filtered by role)
+const getAllTeaOrders = async (req, res) => {
+  try {
+    const role = req.query.role || "admin"; // role=admin or role=customer
+    const filter = {};
+
+    if (role === "admin") {
+      filter.hiddenFromAdmin = { $ne: true };
+    } else if (role === "customer") {
+      filter.hiddenFromCustomer = { $ne: true };
     }
+
+    const teaOrders = await TeaOrder.find(filter);
+
+    if (!teaOrders.length) {
+      return res.status(404).json({ message: "No orders found" });
+    }
+
+    return res.status(200).json({ teaOrders });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };
 
-// Update an existing Tea Order by ID
-const updateTeaOrder = async (req, res, next) => {
-    try {
-        const updatedTeaOrder = await TeaOrder.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (!updatedTeaOrder) {
-            return res.status(404).json({ message: "Tea order not found" });
-        }
-        return res.status(200).json({ teaOrder: updatedTeaOrder });
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ message: "Internal server error" });
-    }
+//  Get a Single Order by ID
+const getTeaOrderById = async (req, res) => {
+  try {
+    const order = await TeaOrder.findById(req.params.id);
+    if (!order) return res.status(404).json({ message: "Order not found" });
+    return res.status(200).json({ teaOrder: order });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };
 
-// Delete an existing Tea Order by ID
-const deleteTeaOrder = async (req, res, next) => {
-    try {
-        const deletedTeaOrder = await TeaOrder.findByIdAndDelete(req.params.id);
-        if (!deletedTeaOrder) {
-            return res.status(404).json({ message: "Tea order not found" });
-        }
-        return res.status(200).json({ message: "Tea order deleted successfully" });
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ message: "Internal server error" });
-    }
+//  Update Entire Order
+const updateTeaOrder = async (req, res) => {
+  try {
+    const updated = await TeaOrder.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!updated) return res.status(404).json({ message: "Order not found" });
+    return res.status(200).json({ teaOrder: updated });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };
 
-// Get a single Tea Order by ID
-const getTeaOrderById = async (req, res, next) => {
-    try {
-        const teaOrderId = req.params.id;
-        const teaOrder = await TeaOrder.findById(teaOrderId);
-        if (!teaOrder) {
-            return res.status(404).json({ message: "Tea order not found" });
-        }
-        return res.status(200).json({ teaOrder });
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ message: "Internal server error" });
+//  Update Status of an Order
+const updateTeaOrderStatus = async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  try {
+    const validStatuses = ['Pending', 'Accepted', 'Shipped', 'Delivered', 'Rejected'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: 'Invalid status value.' });
     }
+
+    const updated = await TeaOrder.findByIdAndUpdate(id, { status }, { new: true });
+    if (!updated) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    return res.status(200).json({ teaOrder: updated });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
 };
 
-export { getAllTeaOrders, createTeaOrder, updateTeaOrder, deleteTeaOrder, getTeaOrderById };
+//  Conditional Delete
+const deleteTeaOrder = async (req, res) => {
+  try {
+    const { role } = req.query; // ?role=admin or ?role=customer
+    const order = await TeaOrder.findById(req.params.id);
+
+    if (!order) return res.status(404).json({ message: "Order not found" });
+
+    const { status } = order;
+
+    if (role === "admin") {
+      if (status === "Pending") {
+        return res.status(403).json({ message: "Admins cannot delete pending orders." });
+      }
+      order.hiddenFromAdmin = true;
+      await order.save();
+      return res.status(200).json({ message: "Order hidden from admin dashboard." });
+    }
+
+    if (role === "customer") {
+      if (status === "Pending") {
+        await TeaOrder.findByIdAndDelete(req.params.id);
+        return res.status(200).json({ message: "Order fully deleted by customer." });
+      } else {
+        order.hiddenFromCustomer = true;
+        await order.save();
+        return res.status(200).json({ message: "Order hidden from customer view." });
+      }
+    }
+
+    return res.status(400).json({ message: "Invalid role." });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+//  Export All Functions
+export {
+  getAllTeaOrders,
+  createTeaOrder,
+  updateTeaOrder,
+  deleteTeaOrder,
+  getTeaOrderById,
+  updateTeaOrderStatus,
+};

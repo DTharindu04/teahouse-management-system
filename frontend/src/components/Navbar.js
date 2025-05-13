@@ -50,9 +50,10 @@ const Navbar = () => {
                 <div className="dropdown-menu bg-light rounded-0 m-0">
                 <Link to="/feature" className={`dropdown-item ${isActive('/feature')}`}>Features</Link>
                   <Link to="/orders" className={`dropdown-item ${isActive('/orders')}`}>Orders</Link>
+                  <Link to="/suppliers" className={`dropdown-item ${isActive('/suppliers')}`}>Suppliers</Link>
                   <Link to="/article" className={`dropdown-item ${isActive('/article')}`}>Blog Article</Link>
                   <Link to="/testimonial" className={`dropdown-item ${isActive('/testimonial')}`}>Testimonial</Link>
-                  <Link to="/404" className={`dropdown-item ${isActive('/404')}`}>404 Page</Link>
+                 
                 </div>
               </div>
 
