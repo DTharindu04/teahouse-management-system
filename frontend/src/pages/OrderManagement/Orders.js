@@ -21,7 +21,8 @@ const OrderTable = () => {
   const [orderToDelete, setOrderToDelete] = useState(null);
   const [orders, setOrders] = useState([]);
 
-
+  const [showDownloadAlert, setShowDownloadAlert] = useState(false);
+  const [showDeleteAlert, setShowDeleteAlert] = useState(false);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -66,11 +67,14 @@ const OrderTable = () => {
 
   const confirmDelete = async () => {
     try {
-
       await axios.delete(`http://localhost:5000/teaorder/${orderToDelete}?role=customer`);
       const updatedOrders = orders.filter(order => order._id !== orderToDelete);
       setOrders(updatedOrders);
       setFilteredData(updatedOrders);
+  
+      // ✅ Show alert
+      setShowDeleteAlert(true);
+      setTimeout(() => setShowDeleteAlert(false), 3000);
     } catch (error) {
       console.error("Failed to delete order:", error);
     } finally {
@@ -78,6 +82,7 @@ const OrderTable = () => {
       setOrderToDelete(null);
     }
   };
+  
 
   const closeModal = () => {
     setShowConfirm(false);
@@ -121,7 +126,24 @@ const OrderTable = () => {
     setCurrentPage(pageNumber);
   };
 
-
+  const handleDownloadPDF = async (orderId) => {
+    try {
+      const res = await axios.get(`http://localhost:5000/teaorder/${orderId}?role=customer`);
+      const fullOrder = res.data.teaOrder;
+  
+      if (fullOrder) {
+        GenerateOrderPDF(fullOrder);
+        setShowDownloadAlert(true); // Show alert
+        setTimeout(() => setShowDownloadAlert(false), 3000); // Hide after 3 seconds
+      } else {
+        console.error("Order not found or incomplete.");
+      }
+    } catch (error) {
+      console.error("Failed to fetch full order for PDF:", error);
+    }
+  };
+  
+  
 
   return (
     <div className="table-container py-5">
@@ -206,7 +228,7 @@ const OrderTable = () => {
                       </button></Link>
 
 
-                      <button className="action-btn download" title="Download" onClick={() => GenerateOrderPDF(order)}><i className="bx bx-download"></i></button>
+                      <button className="action-btn download" title="Download"  onClick={() => handleDownloadPDF(order._id)}><i className="bx bx-download"></i></button>
                       <Link to={`/orders/${order._id}`}> <button className="action-btn edit" title="Edit" disabled={order.status === "Accepted" || order.status === "Rejected"}
                         style={
                           order.status === "Accepted" || order.status === "Rejected"
@@ -251,6 +273,18 @@ const OrderTable = () => {
         onConfirm={confirmDelete}
         message="Are you sure you want to delete this order?"
       />
+      {showDownloadAlert && (
+  <div className="download-alert">
+    PDF Downloaded
+  </div>
+)}
+{showDeleteAlert && (
+  <div className="download-alert" style={{ backgroundColor: '#cf182a' }}>
+    Order Deleted
+  </div>
+)}
+
+
     </div>
   );
 };

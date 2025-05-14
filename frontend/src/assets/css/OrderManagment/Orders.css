@@ -58,19 +58,22 @@
 }
 
 .status.pending {
-  background-color: #fff3cd;
-  color: #856404;
+  background-color: #fff4cc; /* soft warm yellow */
+  color: #b8860b; /* golden brown */
 }
 
 .status.accepted {
-  background-color: #d4edda;
-  color: #155724;
+  background-color: #d6f5e3; /* soft mint green */
+  color: #2e8b57; /* medium sea green */
 }
 
 .status.rejected {
-  background-color: #f8d7da;
-  color: #721c24;
+  background-color: #ffe5e5; /* pale pink-red */
+  color: #d9534f; /* soft red */
 }
+
+
+
 
 .actions {
   
@@ -253,4 +256,32 @@
   background-color: #88B44E;
   color: white;
   font-weight: bold;
+}
+
+
+.download-alert {
+  position: fixed;
+  top: 20px;
+  left:43.5%;
+  right: auto;
+  transform: translateX(-50%);  /* Keep this for centering horizontally */
+  background-color: #88B44E; /* Green */
+  color: white;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 500;
+  z-index: 9999;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  animation: fadeInOut 3s ease-in-out;
+  text-align: center;
+}
+
+
+
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(-10px); }
+  10% { opacity: 1; transform: translateY(0); }
+  90% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-10px); }
 }
